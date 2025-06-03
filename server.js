@@ -9,10 +9,10 @@ app.use(cors());
 app.use(express.json()); // POST, PATCH 요청 본문(JSON) 파싱
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'capstone',
-  password: '~al09490402',
+  user: 'capstone_db_owner',
+  host: 'ep-winter-thunder-a4nlvdmy-pooler.us-east-1.aws.neon.tech',
+  database: 'capstone_db',
+  password: 'npg_zDJqaIkyg07j',
   port: 5432,
 });
 
