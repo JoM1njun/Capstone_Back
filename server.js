@@ -31,10 +31,10 @@ const msql = `
     FROM place;
   `;
 
-  module.exports = {
-    msql,
-    psql
-  }
+  // module.exports = {
+  //   msql,
+  //   psql
+  // }
 
 console.log('server.js 시작됨');
 
