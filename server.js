@@ -37,6 +37,7 @@ const msql = `
   }
 
 app.get('/', (req, res) => {
+  console.log("Get 요청 받음");
   res.send('Hello from Node.js server!');
 });
 
