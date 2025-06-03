@@ -36,6 +36,10 @@ const msql = `
     psql
   }
 
+app.get('/', (req, res) => {
+  res.send('Hello from Node.js server!');
+});
+
 // GET API
 // Management Data
 app.get('/api/management', async (req, res) => {
