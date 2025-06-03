@@ -220,7 +220,7 @@ app.get("/api/db-connect", async (req, res) => {
   }
 });
 
-const server = app.listen(port, () => {
+const server = app.listen(port, '0.0.0.0', () => {
   const addr = server.address();
   console.log(`Server running at http://${addr.address}:${port}`);
 });
