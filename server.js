@@ -36,6 +36,8 @@ const msql = `
     psql
   }
 
+console.log('server.js 시작됨');
+
 app.get('/', (req, res) => {
   console.log("Get 요청 받음");
   res.send('Hello from Node.js server!');
