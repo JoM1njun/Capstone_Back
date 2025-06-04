@@ -300,7 +300,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
     `SELECT 
       DATE_TRUNC('day', record_at) as date,
       COUNT(*) as movement_count
-     FROM movement_history 
+     FROM management_history 
      WHERE management_id = $1 
      AND record_at BETWEEN $2 AND $3
      GROUP BY date
