@@ -16,6 +16,7 @@ const pool = new Pool({
   port: 5432,
   ssl: {
       rejectUnauthorized: false, // SSL 인증서 문제를 해결하기 위한 설정
+      max: 20,
     },
 });
 
