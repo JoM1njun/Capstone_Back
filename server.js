@@ -280,6 +280,15 @@ app.get('/api/management/movement/:id', async (req, res) => {
   }
   const { name, shake_date } = itemResult.rows[0];
 
+  const shakeDateRaw = itemResult.rows[0].shake_date;
+  if (!shakeDateRaw) {
+    return res.status(400).json({ error: 'shake_date 값이 없습니다.' });
+  }
+  const startDate = new Date(shakeDateRaw);
+  if (isNaN(startDate.getTime())) {
+    return res.status(400).json({ error: 'shake_date 값이 유효하지 않습니다.' });
+  }
+
   // shake_date 기준 한 달 범위 계산
   const startDate = new Date(shake_date);
   const endDate = new Date(startDate);
