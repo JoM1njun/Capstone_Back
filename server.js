@@ -100,6 +100,8 @@ app.get('/api/category', async (req, res) => {
       return res.status(400).json({ error: 'Invalid category' });
     }
 
+    const typeId = typeResult.rows[0].id;
+
     // 카테고리별 장소 조회 쿼리
     const result = await pool.query(
       `SELECT 
