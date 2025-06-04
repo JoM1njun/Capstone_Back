@@ -298,7 +298,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
   // 움직임 데이터 조회
   const result = await pool.query(
     `SELECT 
-      DATE_TRUNC('day', record_at) as date,
+      DATE_TRUNC('month', record_at) as date,
       COUNT(*) as movement_count
      FROM management_history 
      WHERE management_id = $1 
