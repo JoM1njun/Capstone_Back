@@ -290,7 +290,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
   }
 
   // shake_date 기준 한 달 범위 계산
-  const startDate = new Date(shake_date);
+  //const startDate = new Date(shake_date);
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + 1);
   endDate.setDate(endDate.getDate() - 1); // shake_date + 1달 - 1일
