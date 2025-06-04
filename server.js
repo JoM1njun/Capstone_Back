@@ -9,10 +9,10 @@ app.use(cors());
 app.use(express.json()); // POST, PATCH 요청 본문(JSON) 파싱
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'capstone',
-  password: '~al09490402',
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PW,
   port: 5432,
   ssl: {
       rejectUnauthorized: false, // SSL 인증서 문제를 해결하기 위한 설정
