@@ -272,13 +272,13 @@ app.get('/api/management/movement/:id', async (req, res) => {
 
   // 관리 항목의 shake_date 조회
   const itemResult = await pool.query(
-    'SELECT id, shake_date FROM management WHERE id = $1',
+    'SELECT id, marker_id, status, shake_date FROM management WHERE id = $1',
     [id]
   );
   if (itemResult.rows.length === 0) {
     return res.status(404).json({ error: '관리 항목을 찾을 수 없습니다.' });
   }
-  const { name, shake_date } = itemResult.rows[0];
+  const { id: managementID, shake_date } = itemResult.rows[0];
 
   const shakeDate = itemResult.rows[0].shake_date;
   if (!shakeDate) {
@@ -298,14 +298,14 @@ app.get('/api/management/movement/:id', async (req, res) => {
   // 움직임 데이터 조회
   const result = await pool.query(
     `SELECT 
-      DATE_TRUNC('day', record_ad) as date,
+      DATE_TRUNC('day', record_at) as date,
       COUNT(*) as movement_count
      FROM movement_history 
      WHERE management_id = $1 
      AND record_at BETWEEN $2 AND $3
-     GROUP BY DATE_TRUNC('day', record_at)
+     GROUP BY date
      ORDER BY date`,
-    [id, startDate, endDate]
+    [managementID, startDate, endDate]
   );
 
   // 날짜별 데이터 포맷팅
