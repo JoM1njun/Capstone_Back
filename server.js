@@ -298,12 +298,12 @@ app.get('/api/management/movement/:id', async (req, res) => {
   // 움직임 데이터 조회
   const result = await pool.query(
     `SELECT 
-      DATE_TRUNC('day', created_at) as date,
+      DATE_TRUNC('day', shake_date) as date,
       COUNT(*) as movement_count
      FROM movements 
-     WHERE name = $1 
+     WHERE marker_id = $1 
      AND created_at BETWEEN $2 AND $3
-     GROUP BY DATE_TRUNC('day', created_at)
+     GROUP BY day
      ORDER BY date`,
     [name, startDate, endDate]
   );
@@ -353,6 +353,12 @@ app.patch('/api/management/shake/:id', async (req, res) => {
        WHERE id = $3`,
       [status, shake_date || new Date(), id]
     );
+
+     await pool.query(
+    `INSERT INTO management_history (management_id, status, record_at)
+     VALUES ($1, $2, NOW())`,
+    [id, status]
+  );
 
     res.json({ status: 'success', message: `ID ${id} updated` });
   } catch (err) {
