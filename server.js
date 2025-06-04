@@ -14,6 +14,9 @@ const pool = new Pool({
   database: 'capstone_db',
   password: 'npg_zDJqaIkyg07j',
   port: 5432,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Management
