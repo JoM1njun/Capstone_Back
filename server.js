@@ -9,46 +9,38 @@ app.use(cors());
 app.use(express.json()); // POST, PATCH 요청 본문(JSON) 파싱
 
 const pool = new Pool({
-  user: 'capstone_db_owner',
-  host: 'ep-winter-thunder-a4nlvdmy-pooler.us-east-1.aws.neon.tech',
-  database: 'capstone_db',
-  password: 'npg_zDJqaIkyg07j',
+  user: 'postgres',
+  host: 'localhost',
+  database: 'capstone',
+  password: '~al09490402',
   port: 5432,
   ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-// Management
-const msql = `
-    SELECT m.id, m.name, t.type_name, m."date", m.location, m.status, m.shake_date, f.number
-    FROM management m
-    JOIN types t ON m.type_id = t.id
-    JOIN floors f ON m.floor_id = f.name
-    order by length(m.name), m.name
-  `;
-
-  // Place
-  const psql = `
-    SELECT alias, name, lat, lng, maxfloor
-    FROM place;
-  `;
-
-  module.exports = {
-    msql,
-    psql
-  }
-
-console.log('server.js 시작됨');
-
-app.get('/', (req, res) => {
-  console.log("Get 요청 받음");
-  res.send('Hello from Node.js server!');
+      rejectUnauthorized: false, // SSL 인증서 문제를 해결하기 위한 설정
+    },
 });
 
 // GET API
 // Management Data
 app.get('/api/management', async (req, res) => {
+  // Management
+const msql = `
+    SELECT 
+    m.id,
+    mk.name AS name,
+    t.type_name AS type,
+    m.date,
+    m.shake_date,
+    CONCAT(p.name, ' ', f.number, '층') AS location,
+    m.status
+    FROM 
+    management m
+    JOIN marker mk ON m.marker_id = mk.id
+    JOIN types t ON mk.ckey = t.id
+    JOIN floors f ON mk.fkey = f.name
+    JOIN place p ON f.building_name = p.alias
+    ORDER BY m.id;
+  `;
+
   try {
     const result = await pool.query(msql);
     res.json(result.rows);
@@ -60,6 +52,12 @@ app.get('/api/management', async (req, res) => {
 
 // Place Data
 app.get('/api/places', async (req, res) => {
+  // Place
+  const psql = `
+    SELECT alias, name, lat, lng, maxfloor
+    FROM place;
+  `;
+
   try {
     const result = await pool.query(psql);
     res.json(result.rows);
@@ -69,10 +67,78 @@ app.get('/api/places', async (req, res) => {
   }
 });
 
+// Marker Data
+app.get('/api/marker', async (req, res) => {
+  const mksql = `
+    SELECT m.x, m.y, m.name, f.number AS floor
+    FROM marker m
+    JOIN floors f ON m.fkey = f.name;
+  `;
+  
+  try {
+    const result = await pool.query(mksql);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching places:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Category Data
+app.get('/api/category', async (req, res) => {
+  const { query } = req.query; // URL의 query 파라미터에서 카테고리 받기
+  
+  try {
+    // types 테이블에서 카테고리 ID 찾기
+    const typeResult = await pool.query(
+      'SELECT id FROM types WHERE type_name = $1',
+      [query]
+    );
+
+    if (typeResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Invalid category' });
+    }
+
+    // 카테고리별 장소 조회 쿼리
+    const result = await pool.query(
+      `SELECT 
+        c.id,
+        c.name,
+        c.lat as latitude,
+        c.lng as longitude,
+        c.type
+      FROM category c
+      WHERE c.type = $1`,
+      [typeId]
+    );
+
+    // 응답 데이터 포맷팅
+    const places = result.rows.map(row => ({
+      name: row.name,
+      type: row.type,
+      latitude: parseFloat(row.latitude),
+      longitude: parseFloat(row.longitude),
+    }));
+
+    res.json({ places });
+  } catch (err) {
+    console.error("Category search failed:", err);
+    res.status(500).json({ 
+      error: "Category search failed", 
+      details: err.message 
+    });
+  }
+});
+
 // Management 데이터 수정 API
 app.put('/api/management/:id', async (req, res) => {
   const id = req.params.id;
   const { name, type_name, date, location, shake_date } = req.body;
+
+  // 디버깅을 위한 로그 추가
+  console.log("Received data:", { id, name, type_name, date, location, shake_date });
+  console.log("Location type:", typeof location);
+  console.log("Location value:", location);
 
   try {
     // type_name으로 type_id를 찾는 쿼리
@@ -87,21 +153,53 @@ app.put('/api/management/:id', async (req, res) => {
 
     const typeId = typeResult.rows[0].id;
 
+    // location에서 건물명과 층수 분리 (예: "하워드관 1층" -> ["하워드관", "1"])
+    const [building, floor] = location.split(' ');
+    const floorNumber = floor.replace('층', '');
+
+    // floor 테이블에서 해당 건물의 floor name 찾기
+    const floorResult = await pool.query(
+      `SELECT f.name 
+       FROM floors f 
+       JOIN place p ON f.building_name = p.alias 
+       WHERE p.name = $1 AND f.number = $2`,
+      [building, floorNumber]
+    );
+
+    if (floorResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Invalid location' });
+    }
+
+    const floorName = floorResult.rows[0].name;
+
+    // marker 테이블 업데이트
+    const markerResult = await pool.query(
+      `UPDATE marker 
+       SET name = $1,
+           ckey = $2,
+           fkey = $3
+       WHERE id = (
+         SELECT marker_id 
+         FROM management 
+         WHERE id = $4
+       )
+       RETURNING id`,
+      [name, typeId, floorName, id]
+    );
+
+    if (markerResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Marker not found' });
+    }
+
     // management 테이블 업데이트
     const result = await pool.query(
       `UPDATE management 
-       SET name = $1,
-           type_id = $2,
-           date = $3,
-           location = $4,
-           shake_date = $5
-       WHERE id = $6`,
-      [name, typeId, date, location, shake_date, id]
+       SET date = $1,
+           shake_date = $2
+       WHERE id = $3
+       RETURNING *`,
+      [date, shake_date, id]
     );
-
-    // if (result.rows.length === 0) {
-    //   return res.status(404).json({ error: 'Item not found' });
-    // }
 
     console.log("Update successful:", result.rows[0]);
     res.json({ 
@@ -115,6 +213,54 @@ app.put('/api/management/:id', async (req, res) => {
       status: 'error', 
       message: 'Update failed', 
       details: err.message
+    });
+  }
+});
+
+// Management 데이터 삭제 API
+app.delete('/api/management/:id', async (req, res) => {
+  const id = req.params.id;
+  console.log("삭제 요청 받음 - ID:", id);
+
+  try {
+    // 트랜잭션 시작
+    await pool.query('BEGIN');
+
+    // management 테이블에서 marker_id 가져오기
+    const markerResult = await pool.query(
+      'SELECT marker_id FROM management WHERE id = $1',
+      [id]
+    );
+
+    if (markerResult.rows.length === 0) {
+      console.log("해당 ID를 찾을 수 없음 : ", id);
+      await pool.query('ROLLBACK');
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    const markerId = markerResult.rows[0].marker_id;
+
+    // management 테이블에서 삭제
+    await pool.query('DELETE FROM management WHERE id = $1', [id]);
+
+    // marker 테이블에서 삭제
+    await pool.query('DELETE FROM marker WHERE id = $1', [markerId]);
+
+    // 트랜잭션 커밋
+    await pool.query('COMMIT');
+
+    res.json({ 
+      status: 'success', 
+      message: `ID ${id} deleted successfully` 
+    });
+  } catch (err) {
+    // 에러 발생 시 롤백
+    await pool.query('ROLLBACK');
+    console.error("Delete failed:", err);
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Delete failed', 
+      details: err.message 
     });
   }
 });
@@ -210,7 +356,7 @@ app.patch('/api/management/shake/:id', async (req, res) => {
 app.get("/api/db-connect", async (req, res) => {
   try {
     // 간단한 쿼리로 연결 확인 (예: 현재 시간 가져오기)
-    const result = await queryDB("SELECT NOW()");
+    const result = await pool.query("SELECT NOW()");
     console.log("DB Connected");
     res.json({
       status: "success",
@@ -223,7 +369,6 @@ app.get("/api/db-connect", async (req, res) => {
   }
 });
 
-const server = app.listen(port, '0.0.0.0', () => {
-  const addr = server.address();
-  console.log(`Server running at http://${addr.address}:${port}`);
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });
