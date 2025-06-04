@@ -272,7 +272,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
 
   // 관리 항목의 shake_date 조회
   const itemResult = await pool.query(
-    'SELECT name, shake_date FROM management WHERE id = $1',
+    'SELECT id, shake_date FROM management WHERE id = $1',
     [id]
   );
   if (itemResult.rows.length === 0) {
@@ -280,11 +280,11 @@ app.get('/api/management/movement/:id', async (req, res) => {
   }
   const { name, shake_date } = itemResult.rows[0];
 
-  const shakeDateRaw = itemResult.rows[0].shake_date;
-  if (!shakeDateRaw) {
+  const shakeDate = itemResult.rows[0].shake_date;
+  if (!shakeDate) {
     return res.status(400).json({ error: 'shake_date 값이 없습니다.' });
   }
-  const startDate = new Date(shakeDateRaw);
+  const startDate = new Date(shakeDate);
   if (isNaN(startDate.getTime())) {
     return res.status(400).json({ error: 'shake_date 값이 유효하지 않습니다.' });
   }
@@ -298,14 +298,14 @@ app.get('/api/management/movement/:id', async (req, res) => {
   // 움직임 데이터 조회
   const result = await pool.query(
     `SELECT 
-      DATE_TRUNC('day', shake_date) as date,
+      DATE_TRUNC('day', record_ad) as date,
       COUNT(*) as movement_count
-     FROM movements 
-     WHERE marker_id = $1 
-     AND created_at BETWEEN $2 AND $3
-     GROUP BY day
+     FROM movement_history 
+     WHERE management_id = $1 
+     AND record_at BETWEEN $2 AND $3
+     GROUP BY DATE_TRUNC('day', record_at)
      ORDER BY date`,
-    [name, startDate, endDate]
+    [id, startDate, endDate]
   );
 
   // 날짜별 데이터 포맷팅
@@ -334,7 +334,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
     values: normalizedValues,
     rawValues: values,
     maxValue,
-    name,
+    name: `관리 ID ${id}`,
     shake_date: startDate,
     end_date: endDate
   });
