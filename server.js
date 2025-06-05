@@ -14,9 +14,9 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PW,
   port: 5432,
+  max: 20,
   ssl: {
       rejectUnauthorized: false, // SSL 인증서 문제를 해결하기 위한 설정
-      max: 20,
     },
 });
 
@@ -43,7 +43,9 @@ const msql = `
   `;
 
   try {
+    console.time("Query: /api/management");
     const result = await pool.query(msql);
+    console.timeEnd("Query: /api/management");
     res.json(result.rows);
   } catch (err) {
     console.error('DB error:', err);
