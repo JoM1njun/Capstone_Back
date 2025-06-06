@@ -355,6 +355,12 @@ app.patch('/api/management/shake/:id', async (req, res) => {
   console.log("body.shake_date:", shake_date);
 
   try {
+    if (typeof shake_date === 'number') {
+      // 밀리초면 초로 변환
+      if (shake_date > 9999999999) shake_date = new Date(shake_date);
+      else shake_date = new Date(shake_date * 1000);
+    }
+    
     await pool.query(
       `UPDATE management
        SET status = $1,
