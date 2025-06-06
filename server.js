@@ -349,6 +349,11 @@ app.patch('/api/management/shake/:id', async (req, res) => {
   const id = req.params.id;
   const { status, shake_date } = req.body;
 
+  console.log("🔵 PATCH 요청 수신");
+  console.log("params.id:", id);
+  console.log("body.status:", status);
+  console.log("body.shake_date:", shake_date);
+
   try {
     await pool.query(
       `UPDATE management
