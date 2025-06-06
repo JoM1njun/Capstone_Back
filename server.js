@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 
 const app = express();
 const port = 3000;
+const HOST = '0.0.0.0'; // ★ 중요: 외부에서 접근 가능하게
 
 app.use(cors());
 app.use(express.json()); // POST, PATCH 요청 본문(JSON) 파싱
@@ -400,6 +401,6 @@ app.get("/api/db-connect", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running at https://capstone-back.fly.dev:${port}`);
+app.listen(port, HOST, () => {
+  console.log(`Server running at ${HOST}:${port}`);
 });
