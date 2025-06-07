@@ -91,6 +91,7 @@ app.get('/api/marker', async (req, res) => {
 // Category Data
 app.get('/api/category', async (req, res) => {
   const { type } = req.query; // 쿼리에서 type 받기
+  console.log("Received /api/category with type:", type);
 
   if (!type) {
     return res.status(400).json({ error: "Missing type parameter" });
