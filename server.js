@@ -312,8 +312,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
      FROM management_history 
      WHERE management_id = $1 
      AND record_at BETWEEN $2 AND $3
-     GROUP BY DATE(record_at), record_at
-     ORDER BY date`,
+     ORDER BY DATE(record_at), record_at`,
     [managementID, startDate, endDate]
   );
 
