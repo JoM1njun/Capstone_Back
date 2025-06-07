@@ -22,7 +22,7 @@ const pool = new Pool({
 });
 
 // GET API
-// Management Data
+// Management Data API
 app.get('/api/management', async (req, res) => {
   // Management
 const msql = `
@@ -54,7 +54,7 @@ const msql = `
   }
 });
 
-// Place Data
+// Place Data API
 app.get('/api/places', async (req, res) => {
   // Place
   const psql = `
@@ -71,7 +71,7 @@ app.get('/api/places', async (req, res) => {
   }
 });
 
-// Marker Data
+// Marker Data API
 app.get('/api/marker', async (req, res) => {
   const mksql = `
     SELECT m.x, m.y, m.name, f.number AS floor
@@ -88,7 +88,7 @@ app.get('/api/marker', async (req, res) => {
   }
 });
 
-// Category Data
+// Category Data API
 app.get('/api/category', async (req, res) => {
   const { type } = req.query; // 쿼리에서 type 받기
   console.log("Received /api/category with type:", type);
@@ -272,7 +272,7 @@ app.delete('/api/management/:id', async (req, res) => {
   }
 });
 
-// 월별 움직임 데이터 API (shake_date 기준)
+// 월별 움직임 데이터 API (shake_date 기준) Chart
 app.get('/api/management/movement/:id', async (req, res) => {
   const { id } = req.params;
 
