@@ -90,35 +90,35 @@ app.get('/api/marker', async (req, res) => {
 
 // Category Data
 app.get('/api/category', async (req, res) => {
-  const { query } = req.query; // URL의 query 파라미터에서 카테고리 받기
-  
+  const { type } = req.query; // 쿼리에서 type 받기
+
+  if (!type) {
+    return res.status(400).json({ error: "Missing type parameter" });
+  }
+
+  const typeId = parseInt(type, 10);
+  if (isNaN(typeId)) {
+    return res.status(400).json({ error: "Invalid type parameter" });
+  }
+
   try {
-    // types 테이블에서 카테고리 ID 찾기
-    const typeResult = await pool.query(
-      'SELECT id FROM types WHERE type_name = $1',
-      [query]
-    );
-
-    if (typeResult.rows.length === 0) {
-      return res.status(400).json({ error: 'Invalid category' });
-    }
-
-    const typeId = typeResult.rows[0].id;
-
-    // 카테고리별 장소 조회 쿼리
+    // types 테이블 조회는 생략해도 됨, 바로 category에서 조회
     const result = await pool.query(
       `SELECT 
-        c.id,
-        c.name,
-        c.lat as latitude,
-        c.lng as longitude,
-        c.type
-      FROM category c
-      WHERE c.type = $1`,
+        id,
+        name,
+        lat as latitude,
+        lng as longitude,
+        type
+      FROM category
+      WHERE type = $1`,
       [typeId]
     );
 
-    // 응답 데이터 포맷팅
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "No places found for this category" });
+    }
+
     const places = result.rows.map(row => ({
       name: row.name,
       type: row.type,
@@ -129,9 +129,9 @@ app.get('/api/category', async (req, res) => {
     res.json({ places });
   } catch (err) {
     console.error("Category search failed:", err);
-    res.status(500).json({ 
-      error: "Category search failed", 
-      details: err.message 
+    res.status(500).json({
+      error: "Category search failed",
+      details: err.message,
     });
   }
 });
