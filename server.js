@@ -6,7 +6,9 @@ const app = express();
 const port = 3000;
 const HOST = '0.0.0.0'; // ★ 중요: 외부에서 접근 가능하게
 
-app.use(cors());
+app.use(cors({
+  origin: "https://capstone-rust-nu.vercel.app",
+}));
 app.use(express.json()); // POST, PATCH 요청 본문(JSON) 파싱
 
 const pool = new Pool({
