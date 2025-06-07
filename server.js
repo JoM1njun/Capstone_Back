@@ -105,7 +105,7 @@ app.get('/api/category', async (req, res) => {
   try {
     // types 테이블 조회는 생략해도 됨, 바로 category에서 조회
     const result = await pool.query(
-      `SELECT 
+      `SELECT
         id,
         name,
         lat as latitude,
@@ -303,7 +303,8 @@ app.get('/api/management/movement/:id', async (req, res) => {
 
   // 움직임 데이터 조회
   const result = await pool.query(
-    `SELECT 
+    `SELECT DISTINCT ON (DATE(record_date))
+      status,
       DATE_TRUNC('month', record_at) as date,
       COUNT(*) as movement_count
      FROM management_history 
