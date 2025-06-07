@@ -303,7 +303,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
 
   // 움직임 데이터 조회
   const result = await pool.query(
-    `SELECT DISTINCT ON (DATE(record_date))
+    `SELECT DISTINCT ON (DATE(record_at))
       status,
       DATE_TRUNC('month', record_at) as date,
       COUNT(*) as movement_count
