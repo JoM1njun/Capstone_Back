@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const moment = require('moment-timezone');
 
+const nowKST = moment().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
 const app = express();
 const port = 3000;
 const HOST = '0.0.0.0'; // ★ 중요: 외부에서 접근 가능하게
@@ -199,6 +201,9 @@ app.put('/api/management/:id', async (req, res) => {
       return res.status(404).json({ error: 'Marker not found' });
     }
 
+    const dateKST = moment.tz(date, 'Asia/Seoul').format('YYYY-MM-DD');
+    const shakeDateKST = moment.tz(shake_date, 'Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
+
     // management 테이블 업데이트
     const result = await pool.query(
       `UPDATE management 
@@ -206,7 +211,7 @@ app.put('/api/management/:id', async (req, res) => {
            shake_date = $2
        WHERE id = $3
        RETURNING *`,
-      [date, shake_date, id]
+      [dateKST, shakeDateKST, id]
     );
 
     console.log("Update successful:", result.rows[0]);
@@ -360,15 +365,15 @@ app.patch('/api/management/shake/:id', async (req, res) => {
     await pool.query(
       `UPDATE management
        SET status = $1,
-           shake_date = NOW()
-       WHERE id = $2`,
-      [status, id]
+           shake_date = $2
+       WHERE id = $3`,
+      [status, id, nowKST]
     );
 
      await pool.query(
     `INSERT INTO management_history (management_id, status, record_at)
-     VALUES ($1, $2, NOW())`,
-    [id, status]
+     VALUES ($1, $2, $3)`,
+    [id, status, nowKST]
   );
 
     res.json({ status: 'success', message: `ID ${id} updated` });
