@@ -296,16 +296,15 @@ app.get('/api/management/movement/:id', async (req, res) => {
   if (!shakeDate) {
     return res.status(400).json({ error: 'shake_date 값이 없습니다.' });
   }
-  const startDate = new Date(shakeDate);
+
+  const endDate = new Date(shake_date);
   if (isNaN(startDate.getTime())) {
     return res.status(400).json({ error: 'shake_date 값이 유효하지 않습니다.' });
   }
 
   // shake_date 기준 한 달 범위 계산
-  //const startDate = new Date(shake_date);
-  const endDate = new Date(startDate);
-  endDate.setMonth(endDate.getMonth() + 1);
-  endDate.setDate(endDate.getDate() - 1); // shake_date + 1달 - 1일
+  const startDate = new Date(endDate);
+  startDate.setMonth(startDate.getMonth() - 1);
 
   // 움직임 데이터 조회
   const result = await pool.query(
@@ -334,11 +333,11 @@ app.get('/api/management/movement/:id', async (req, res) => {
   result.rows.forEach(row => {
     const d = new Date(row.date);
     const idx = Math.round((d - startDate) / (1000 * 60 * 60 * 24));
-    values[idx] = row.movement_count;
+    values[idx] = row.status;
   });
 
   const maxValue = Math.max(...values);
-  const normalizedValues = values.map(v => maxValue > 0 ? v / maxValue : 0);
+  //const normalizedValues = values.map(v => maxValue > 0 ? v / maxValue : 0);
 
   res.json({
     labels,
