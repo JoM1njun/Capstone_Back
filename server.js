@@ -298,13 +298,13 @@ app.get('/api/management/movement/:id', async (req, res) => {
   }
 
   const endDate = new Date(shake_date);
-  if (isNaN(startDate.getTime())) {
-    return res.status(400).json({ error: 'shake_date 값이 유효하지 않습니다.' });
-  }
-
   // shake_date 기준 한 달 범위 계산
   const startDate = new Date(endDate);
   startDate.setMonth(startDate.getMonth() - 1);
+  
+  if (isNaN(startDate.getTime())) {
+    return res.status(400).json({ error: 'shake_date 값이 유효하지 않습니다.' });
+  }
 
   // 움직임 데이터 조회
   const result = await pool.query(
