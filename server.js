@@ -326,7 +326,8 @@ app.get('/api/management/movement/:id', async (req, res) => {
   for (let i = 0; i < daysInMonth; i++) {
     const date = new Date(startDate);
     date.setDate(date.getDate() + i);
-    labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+    //labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+    labels.push(date.toISOString().split('T')[0]);
     values.push(0);
   }
 
