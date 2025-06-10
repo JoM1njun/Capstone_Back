@@ -321,7 +321,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
   // 날짜별 데이터 포맷팅
   const labels = [];
   const values = [];
-  const daysInMonth = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+  const daysInMonth = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
   for (let i = 0; i < daysInMonth; i++) {
     const date = new Date(startDate);
@@ -337,7 +337,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
   });
 
   const maxValue = Math.max(...values);
-  //const normalizedValues = values.map(v => maxValue > 0 ? v / maxValue : 0);
+  const normalizedValues = values.map(v => maxValue > 0 ? v / maxValue : 0);
 
   res.json({
     labels,
