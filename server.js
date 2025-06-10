@@ -3,7 +3,7 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const moment = require('moment-timezone');
 
-const nowKST = moment().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
+const nowKST = () => moment().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss');
 const app = express();
 const port = 3000;
 const HOST = '0.0.0.0'; // ★ 중요: 외부에서 접근 가능하게
@@ -367,13 +367,13 @@ app.patch('/api/management/shake/:id', async (req, res) => {
        SET status = $1,
            shake_date = $2
        WHERE id = $3`,
-      [status, id, nowKST]
+      [status, id, nowKST()]
     );
 
      await pool.query(
     `INSERT INTO management_history (management_id, status, record_at)
      VALUES ($1, $2, $3)`,
-    [id, status, nowKST]
+    [id, status, nowKST()]
   );
 
     res.json({ status: 'success', message: `ID ${id} updated` });
