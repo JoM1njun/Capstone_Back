@@ -77,7 +77,7 @@ app.get('/api/places', async (req, res) => {
 // Marker Data API
 app.get('/api/marker', async (req, res) => {
   const mksql = `
-    SELECT m.x, m.y, m.name, f.number AS floor
+    SELECT m.id, m.x, m.y, m.name, f.number AS floor
     FROM marker m
     JOIN floors f ON m.fkey = f.name;
   `;
