@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 const cors = require('cors');
 const { Pool } = require('pg');
 const moment = require('moment-timezone');
@@ -388,6 +389,33 @@ app.patch('/api/management/shake/:id', async (req, res) => {
   }
 });
 
+router.post('/auth/password', (req, res) => {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "비밀번호가 필요합니다." });
+    }
+  
+    try {
+        const [rows] = await db.execute("SELECT pw FROM password LIMIT 1");
+
+        if (rows.length === 0) {
+            return res.status(500).json({ message: "비밀번호가 설정되어 있지 않습니다." });
+        }
+
+        const storedPassword = rows[0].value;
+
+        if (password === storedPassword) {
+            res.status(200).json({ message: "인증 성공" });
+        } else {
+            res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });
+        }
+    } catch (err) {
+        console.error("비밀번호 확인 오류:", err);
+        res.status(500).json({ message: "서버 오류로 인증 실패" });
+    }
+});
+module.exports = router;
 
 // DB Connenct
 app.get("/api/db-connect", async (req, res) => {
