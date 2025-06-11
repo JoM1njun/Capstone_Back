@@ -415,7 +415,6 @@ router.post('/auth/password', (req, res) => {
         res.status(500).json({ message: "서버 오류로 인증 실패" });
     }
 });
-module.exports = router;
 
 // DB Connenct
 app.get("/api/db-connect", async (req, res) => {
