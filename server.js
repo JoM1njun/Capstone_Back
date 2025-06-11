@@ -367,7 +367,7 @@ app.patch('/api/management/shake/:id', async (req, res) => {
        SET status = $1,
            shake_date = $2
        WHERE id = $3`,
-      [status, id, nowKST()]
+      [status, nowKST(), id]
     );
 
      await pool.query(
