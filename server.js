@@ -339,7 +339,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
   });
 
   const maxValue = Math.max(...values);
-  //const normalizedValues = values.map(v => maxValue > 0 ? v / maxValue : 0);
+  const normalizedValues = values.map(v => maxValue > 0 ? v / maxValue : 0);
 
   res.json({
     labels,
