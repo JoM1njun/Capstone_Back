@@ -388,7 +388,7 @@ app.patch('/api/management/shake/:id', async (req, res) => {
   }
 });
 
-app.post('/auth/password', (req, res) => {
+app.post('/auth/password', async (req, res) => {
     const { password } = req.body;
 
     if (!password) {
