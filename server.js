@@ -335,7 +335,9 @@ app.get('/api/management/movement/:id', async (req, res) => {
   result.rows.forEach(row => {
     const d = new Date(row.date);
     const idx = Math.round((d - startDate) / (1000 * 60 * 60 * 24));
-    values[idx] = row.status;
+    if (!isNaN(idx) && idx >= 0 && idx < values.length) {
+      values[idx] = row.status;
+    }
   });
 
   const maxValue = Math.max(...values);
