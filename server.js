@@ -1,5 +1,4 @@
 const express = require('express');
-const router = express.Router();
 const cors = require('cors');
 const { Pool } = require('pg');
 const moment = require('moment-timezone');
@@ -389,7 +388,7 @@ app.patch('/api/management/shake/:id', async (req, res) => {
   }
 });
 
-router.post('/auth/password', (req, res) => {
+app.post('/auth/password', (req, res) => {
     const { password } = req.body;
 
     if (!password) {
