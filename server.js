@@ -356,6 +356,7 @@ app.get('/api/management/movement/:id', async (req, res) => {
 app.patch('/api/management/shake/:id', async (req, res) => {
   const id = req.params.id;
   const { status, shake_date } = req.body;
+  const now = nowKST();
 
   console.log("🔵 PATCH 요청 수신");
   console.log("params.id:", id);
@@ -368,13 +369,13 @@ app.patch('/api/management/shake/:id', async (req, res) => {
        SET status = $1,
            shake_date = $2
        WHERE id = $3`,
-      [status, nowKST(), id]
+      [status, now, id]
     );
 
      await pool.query(
     `INSERT INTO management_history (management_id, status, record_at)
      VALUES ($1, $2, $3)`,
-    [id, status, nowKST()]
+    [id, status, now]
   );
 
     res.json({ status: 'success', message: `ID ${id} updated` });
