@@ -378,7 +378,8 @@ app.patch('/api/management/shake/:id', async (req, res) => {
 
     res.json({ status: 'success', message: `ID ${id} updated` });
   } catch (err) {
-    console.error("Update failed:", err);
+    console.error("Update failed:", err.message);
+    console.error("Full error:", err);
     res.status(500).json({ status: 'error', message: 'Update failed' });
   }
 });
