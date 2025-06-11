@@ -3,7 +3,7 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const moment = require('moment-timezone');
 
-const nowKST = () => moment().tz('Asia/Seoul').format('YYYY-MM-DDTHH:mm:ss');
+const nowKST = new Date(moment().tz('Asia/Seoul').format());
 const app = express();
 const port = 3000;
 const HOST = '0.0.0.0'; // ★ 중요: 외부에서 접근 가능하게
